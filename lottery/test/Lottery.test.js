@@ -25,4 +25,50 @@ describe('lottery', () => {
   it('deploys a contract', () => {
     assert.ok(lottery.options.address);
   });
+  it('allows one account to enter', async () => {
+    await lottery.methods.enter().send({
+      from: account[0],
+      value: web3.utils.toWei('0.02', 'ether')
+    });
+    const players = await lottery.methods.getPlayers().call({
+      from: account[0]
+    });
+    assert.equal(account[0], players[0]);
+    assert.equal(1, players.length);
+  });
+
+  it('allows multiple account to enter', async () => {
+    await lottery.methods.enter().send({
+      from: account[0],
+      value: web3.utils.toWei('0.02', 'ether')
+    });
+    await lottery.methods.enter().send({
+      from: account[1],
+      value: web3.utils.toWei('0.02', 'ether')
+    });
+    await lottery.methods.enter().send({
+      from: account[2],
+      value: web3.utils.toWei('0.02', 'ether')
+    });
+    const players = await lottery.methods.getPlayers().call({
+      from: account[0]
+    });
+    assert.equal(account[0], players[0]);
+    assert.equal(account[1], players[1]);
+    assert.equal(account[2], players[2]);
+    assert.equal(3, players.length);
+  });
+
+  it('a minimum amount of ether to enter', async () => {
+    try {
+      await lottery.methods.enter().send({
+        from: account[0],
+        value: 100
+      });
+      assert(false);
+    } catch (err) {
+      assert(err);
+    }
+  });
+
 });
